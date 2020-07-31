@@ -23,7 +23,7 @@
 
 module patched_fifo_wrapper (
 	output wire interrupt                 ,
-	input wire s_axi_aclk                 ,
+	input wire clk                        ,
 	input wire s_axi_aresetn              ,
 	input wire [31 : 0] s_axi_awaddr      ,
 	input wire s_axi_awvalid              ,
@@ -57,7 +57,7 @@ module patched_fifo_wrapper (
     
 patched_fifo your_instance_name (
   .interrupt(interrupt),                            // output wire interrupt
-  .s_axi_aclk(s_axi_aclk),                          // input wire s_axi_aclk
+  .s_axi_aclk(clk),                                 // input wire clk
   .s_axi_aresetn(s_axi_aresetn),                    // input wire s_axi_aresetn
   .s_axi_awaddr(s_axi_awaddr),                      // input wire [31 : 0] s_axi_awaddr
   .s_axi_awvalid(s_axi_awvalid),                    // input wire s_axi_awvalid

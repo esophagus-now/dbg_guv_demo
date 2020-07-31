@@ -13,11 +13,10 @@ start_gui
 create_project -force $project $project_dir -part $part_name
 
 create_bd_design "abacus"
-
 update_compile_order -fileset sources_1
-startgroup
+
+# Add the Zynq PS, thanks to Clark Shen (clarkshen.com) for these parameter settings
 create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e:3.2 zynq_ultra_ps_e_0
-endgroup
 set_property -dict [list \
     CONFIG.PSU__PSS_REF_CLK__FREQMHZ {33.333}  \
     CONFIG.PSU__ACT_DDR_FREQ_MHZ {933.323975}  \
@@ -571,8 +570,6 @@ while {[gets $infd line] != -1} {
 close $infd
 close $outfd
 file delete $tmpname
-#reset_runs ${pname}_synth_1
-#launch_runs ${pname}_synth_1
 
 # Add patched FIFO to the block diagram
 # First create a module wrapper
@@ -581,7 +578,7 @@ create_bd_cell -type module -reference patched_fifo_wrapper axi_fifo_mm_s_0
 
 
 # Add in the smartconnect and a processor system reset
-connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins axi_fifo_mm_s_0/s_axi_aclk]
+connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins axi_fifo_mm_s_0/clk]
 connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk]
 startgroup
 create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0
@@ -605,11 +602,6 @@ update_compile_order -fileset sources_1
 # Fix up address editor just to get rid of the warning
 assign_bd_address [get_bd_addr_segs {axi_fifo_mm_s_0/S_AXI/Mem0 }]
 
-# Make a wrapper for the block diagram and set it as the top-level
-make_wrapper -files [get_files $project_dir/$project.srcs/sources_1/bd/abacus/abacus.bd] -top
-set_property top abacus_wrapper [current_fileset]
-update_compile_order -fileset sources_1
-
 # Add in our example design
 create_bd_cell -type module -reference axis_count axis_count_0
 set_property CONFIG.POLARITY ACTIVE_HIGH [get_bd_pins /axis_count_0/rst]
@@ -629,6 +621,15 @@ connect_bd_net [get_bd_pins proc_sys_reset_0/peripheral_reset] [get_bd_pins coll
 connect_bd_net [get_bd_pins collatz_0/rst] [get_bd_pins proc_sys_reset_0/peripheral_reset]
 connect_bd_net [get_bd_pins axis_count_0/rst] [get_bd_pins proc_sys_reset_0/peripheral_reset]
 connect_bd_net [get_bd_pins collatz_0/clk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk0]
+
+# Make a wrapper for the block diagram and set it as the top-level
+# I just copied out what Vivado put in the TCL console; I'm sure it's not
+# necessary to be constantly updating the compile order...
+make_wrapper -files [get_files $project_dir/$project.srcs/sources_1/bd/abacus/abacus.bd] -top
+add_files -norecurse $project_dir/$project.srcs/sources_1/bd/abacus/hdl/abacus_wrapper.v
+update_compile_order -fileset sources_1
+set_property top abacus_wrapper [current_fileset]
+update_compile_order -fileset sources_1
 
 # Neaten it up
 regenerate_bd_layout

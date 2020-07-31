@@ -3,4 +3,7 @@ default:
 
 clean:
 	rm -rf dbg_guv_demo
+	# Vivado sure likes leaving junk on your hard drive...
 	rm -rf .Xil
+	rm -rf vivado*
+	rm -rf *.tmp
