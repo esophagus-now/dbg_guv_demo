@@ -8,7 +8,6 @@ module axis_sink(
 	input wire [31:0] sink_TDATA,
 	input wire sink_TVALID,
 	output wire sink_TREADY,
-	input wire [3:0] sink_TKEEP,
 	input wire sink_TLAST
 );
 
