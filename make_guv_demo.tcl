@@ -558,6 +558,7 @@ if {[get_property CORE_CONTAINER [get_files $xci]] != ""} {
 set_property GENERATE_SYNTH_CHECKPOINT 0 [get_files $xci]
 set_property IS_MANAGED false [get_files $xci]
 # Perform our satanic hacking ritual
+# Part 1 fix the bug
 set fname "$project_dir/$project.srcs/sources_1/ip/$pname/hdl/axi_fifo_mm_s_v4_2_rfs.vhd"
 set tmpname $fname.old
 file rename $fname $tmpname
@@ -565,6 +566,19 @@ set infd [open $tmpname r]
 set outfd [open $fname w]
 while {[gets $infd line] != -1} {
     set line [string map {{/4} {}} $line]
+    puts $outfd $line
+}
+close $infd
+close $outfd
+file delete $tmpname
+# Part 2 fix AXI Lite base addresses
+set fname "$project_dir/$project.srcs/sources_1/ip/$pname/synth/patched_fifo.vhd"
+set tmpname $fname.old
+file rename $fname $tmpname
+set infd [open $tmpname r]
+set outfd [open $fname w]
+while {[gets $infd line] != -1} {
+    set line [string map {{X"8000} {X"A0B0}} $line]
     puts $outfd $line
 }
 close $infd
@@ -602,7 +616,7 @@ update_compile_order -fileset sources_1
 # Fix up address editor just to get rid of the warning
 assign_bd_address [get_bd_addr_segs {axi_fifo_mm_s_0/S_AXI/Mem0 }]
 set_property range 4K [get_bd_addr_segs {zynq_ultra_ps_e_0/Data/SEG_axi_fifo_mm_s_0_reg0}]
-set_property offset 0x00A0000000 [get_bd_addr_segs {zynq_ultra_ps_e_0/Data/SEG_axi_fifo_mm_s_0_reg0}]
+set_property offset 0x00A0B00000 [get_bd_addr_segs {zynq_ultra_ps_e_0/Data/SEG_axi_fifo_mm_s_0_reg0}]
 
 # Add in our example design
 create_bd_cell -type module -reference axis_count axis_count_0
