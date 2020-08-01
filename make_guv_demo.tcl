@@ -601,6 +601,8 @@ update_compile_order -fileset sources_1
 
 # Fix up address editor just to get rid of the warning
 assign_bd_address [get_bd_addr_segs {axi_fifo_mm_s_0/S_AXI/Mem0 }]
+set_property range 4K [get_bd_addr_segs {zynq_ultra_ps_e_0/Data/SEG_axi_fifo_mm_s_0_reg0}]
+set_property offset 0x00A0000000 [get_bd_addr_segs {zynq_ultra_ps_e_0/Data/SEG_axi_fifo_mm_s_0_reg0}]
 
 # Add in our example design
 create_bd_cell -type module -reference axis_count axis_count_0
